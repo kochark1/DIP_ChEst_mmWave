@@ -1,0 +1,6 @@
+# ignore all .txt files
+*.txt
+*.npy
+
+# ignore the following folders and theircontent
+dataSet/
