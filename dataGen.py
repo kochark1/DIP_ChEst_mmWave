@@ -10,6 +10,7 @@ import threading
 import numpy as np
 import os
 
+
 from shared_params import Simulation_parameters, System_parameters,\
     Channel_parameters
 from systemSimulator import SystemModel
@@ -24,6 +25,7 @@ class DataGen:
         # Setting up some system parameters like pilot sequence and creating results
         # subfolders
         System_parameters.set_class_config()
+        SystemModel.set_config(System_parameters, Channel_parameters)
         
     def __init__(self, sample_id):
         """
@@ -84,8 +86,8 @@ class DataGen:
         """
         # SystemModel is the class defined to handle the data generation (RX
         # data).
-        systemModel = SystemModel(System_parameters, Channel_parameters)
-        [y_matrix, h_matrix_org] = systemModel.generate(snr_id)
+        systemModel = SystemModel(snr_id)
+        [y_matrix, h_matrix_org] = systemModel.generate()
         
         # Save the RX data and original channel matrix.
         np.save(os.path.join(filePath, f'Y_sample{self.sample_id}'), y_matrix)

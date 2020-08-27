@@ -5,6 +5,30 @@ Created on Tue Aug 25 13:41:11 2020
 @author: kochark1
 """
 import numpy as np
+import matplotlib.pyplot as plt
+
+
+# ToDo Pavithra task 5: Following are the list of imports for DIP. Try to
+# cleanup and reduce unnecesary imports if possible. or move these into
+# DIP_training file if possible.
+
+from DIP_training import DIP_training as DIP
+import time
+from numpy import linalg as LA
+import scipy.io
+import copy
+from pylab import *
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+import os.path
+import os
+import math
+import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error
+from datetime import datetime
+
 class ChannelEstimator:
     """
     The class is dedicated to include user defined functionality for the
@@ -32,8 +56,8 @@ class ChannelEstimator:
         None.
 
         """
-        # To be replaced by the user code
-        pass
+        self.system_parameters = system_parameters_passed
+        self.channel_parameters = channel_parameters_passed
     
     def estimate(self, y_matrix, h_matrix_org, snr_id):
         """
@@ -49,18 +73,59 @@ class ChannelEstimator:
         None
 
         """
-        # To be replaced by the user code
-        return np.random.uniform(0,1,1)
+        def channel_estimation(self, y_matrix):
+            nT = self.system_parameters.nT
+            nR = self.system_parameters.nR
+            const_L = self.system_parameters.const_L
+            h_LS = np.matmul(y_matrix,
+                             np.linalg.pinv(self.system_parameters.t_matrix))
+            h_matrix = dip_processing(h_LS)
+            return h_matrix
+        def nmse_calculator(h_est, h_org):
+            mse = np.mean((abs(h_est - h_org))**2)
+            den = np.mean((abs(h_org))**2)
+            if den <= (1e-7):
+                return mse*1e7
+            return mse/den
+        def dip_processing(Y_input):
+            # ToDo Pavithra task 4: maintain this method by yourself.
+            # Remove any unnecesary lines. If possible, improve redability
+            GPU = True
+            if GPU == True and torch.cuda.ids_available():
+                device = torch.device('cuda:0')
+                print(device,"   device is")
+                #print("this is it ",torch.cuda.get_device_name(device_id))
+                torch.backends.cudnn.enabled = True
+                torch.backends.cudnn.benchmark = True
+            else:
+                device = torch.device('cpu')
+            
+            user_samples = 10
+            
+            # ToDo Pavithra task 1: here, convert the input 64 by 64
+            # complex matrix to 2,64,64 real
+            Y_input  = np.random.rand(2,64,64,user_samples)
+            
+            # ToDo Pavithra task 2: clean up inside two files as much as
+            # possible
+            DIP_training_1 = DIP(Y_input)
+            DIP_training_1.training(device)
+            # ToDo Pavithra task 3: read Y_output from DIP_training_1 rather
+            # than saving into a file
+            return Y_output
+        
+        h_matrix_estimate = channel_estimation(self, y_matrix)
+        nmse_error = nmse_calculator(h_matrix_estimate, h_matrix_org)
+        return nmse_error
     
     # more methods can be implemented
     
 class Plotter_and_analyzer:
-    def __init__(self, system_parameters_passed, channel_parameters_passed):
-        # To be replaced by the user code
-        pass
+    @classmethod
+    def set_config(cls, system_parameters_passed):
+        cls.system_parameters = system_parameters_passed
     
     def nmse_plotter(self, performance_results):
-        # To be replaced by the user code
-        pass
-    
-    # more methods can be implemented
+        snr_dB = Plotter_and_analyzer.system_parameters.snr_dB
+        plt.plot(snr_dB, performance_results)
+        plt.draw()

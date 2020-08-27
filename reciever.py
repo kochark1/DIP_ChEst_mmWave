@@ -7,6 +7,7 @@ Created on Fri Aug 21 17:32:40 2020
 import numpy as np
 import os
 import threading
+import time
 
 from shared_params import Simulation_parameters, System_parameters,\
     Channel_parameters
@@ -15,9 +16,15 @@ class Reciever:
     def __init__(self, path, number_of_samples):
         self.path = path
         self.number_of_samples = number_of_samples
-        plotter_and_analyzer = Plotter_and_analyzer(System_parameters,
-                                            Channel_parameters)
+        Plotter_and_analyzer.set_config(System_parameters)
+        plotter_and_analyzer = Plotter_and_analyzer()
+        snr_size = len(System_parameters.snr_dB)
+        avg_nmse = np.zeros((snr_size,1))
         for sample_id in range(self.number_of_samples):
+            tt = 0
+            while not Simulation_parameters.completionFlag[sample_id]:
+                time.sleep(0.5)
+                tt += 1
             
             threads = []
             performance_results = np.zeros((len(System_parameters.snr_dB), 1))
@@ -43,7 +50,8 @@ class Reciever:
                 for thread in threads:
                     performance_results[snr_id] = thread.join()
                     snr_id += 1
-            plotter_and_analyzer.nmse_plotter(performance_results)
+            avg_nmse += ((1/self.number_of_samples)*performance_results)
+        plotter_and_analyzer.nmse_plotter(avg_nmse)
             
     
     def snr_branch_estimator(self, filePath, sample_id, snr_id):

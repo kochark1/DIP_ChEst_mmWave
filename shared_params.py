@@ -12,10 +12,14 @@ import sys
 import numpy as np
 class Simulation_parameters:
     dataGenDisabled = False
-    threadingEnabled = True
-    number_of_samples = 10
+    threadingEnabled = False
+    number_of_samples = 5
     reciever_start_sample = 4
     results_folder = "dataSet"
+    completionFlag = np.zeros((number_of_samples, 1))
+    @classmethod
+    def set_completionFlag(cls, sample_id):
+        cls.completionFlag[sample_id] = 1
     @classmethod
     def setup_results_folder(cls):
         cls.root_path = os.getcwd()
@@ -27,7 +31,7 @@ class Simulation_parameters:
         while os.path.exists(cls.results_folder) and itr<5:
             shutil.rmtree(cls.results_folder, ignore_errors=False,
                           onerror=None)
-            time.sleep(2)
+            time.sleep(0.5)
             itr+=1
         if os.path.exists(cls.results_folder):
             print("\n'dataSet' folder was not deleted")
@@ -42,7 +46,7 @@ class System_parameters:
     nR_h = 8 # number of horixontal antennas at the Rx
     nR_v = 8 # number of vertical antennas at the Rx
     nR = nR_v * nR_h # Number_of_Rx_antennas
-    const_L = 16 # ISI spread due to pulse shaping
+    const_L = 1 # ISI spread due to pulse shaping
     fC = 28e9 # carrier frequency in Hz
     nP = 2048 # number of pilot symbols
     snr_dB = range(-10,45,5)
@@ -53,7 +57,8 @@ class System_parameters:
         nT = System_parameters.nT
         nP = System_parameters.nP
         if System_parameters.pilot_structure == 'Random':
-            cls.T = np.random.randn(nT,nP) + np.random.randn(nT,nP) * 1j
+            cls.t_matrix = np.random.randn(nT,nP) +\
+                np.random.randn(nT,nP) * 1j
         else:
             print(f"""System parameter setting error: pilot structure cannot
                   be {System_parameters.pilot_structure}""")

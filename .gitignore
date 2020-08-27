@@ -4,3 +4,4 @@
 
 # ignore the following folders and theircontent
 dataSet/
+__pycache__/

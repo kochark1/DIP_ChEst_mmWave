@@ -72,6 +72,7 @@ for sample_id in range(number_of_samples):
     
     # Start the dataDatageneration sample by sample.
     DataGen(sample_id)
+    Simulation_parameters.set_completionFlag(sample_id)
     # If configured, start reciever thread concurrently with the main thread.
     if threadingEnabled and (sample_id == reciever_start_sample):
         t.start()
