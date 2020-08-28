@@ -89,7 +89,7 @@ class SystemModel:
         
         F_h =  dft(nT_h)
         F_v =  dft(nT_v)
-        cls.b_nt = np.kron(F_v, F_h)
+        cls.b_nt_matrix = np.kron(F_v, F_h)
         return np.kron(F_v, F_h)
     
     @classmethod

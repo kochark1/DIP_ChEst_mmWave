@@ -6,6 +6,7 @@ Created on Tue Aug 25 13:41:11 2020
 """
 import numpy as np
 import matplotlib.pyplot as plt
+
 import torch
 import os.path
 import os
@@ -105,7 +106,7 @@ class ChannelEstimator:
             """
             GPU = True
             
-            if GPU == True and torch.cuda.ids_available():
+            if GPU == True and torch.cuda.is_available():
                 device = torch.device('cuda:0')
                 torch.backends.cudnn.enabled = True
                 torch.backends.cudnn.benchmark = True
@@ -117,13 +118,13 @@ class ChannelEstimator:
             # We are training or fitting 1 sample at a time unlike the
             # DNN training, so the dim = 3 has size 1
             
-            Y_input_DIP = np.zeros(2, Y_input.shape[0], Y_input.shape[1], 1)
-            Y_input_DIP[0,:,:,:] =  Y_input.real.astype(np.float)
-            Y_input_DIP[1,:,:,:] =  Y_input.imag.astype(np.float)
+            Y_input_DIP = np.zeros((2, Y_input.shape[0], Y_input.shape[1], 1))
+            Y_input_DIP[0,:,:,0] =  Y_input.real.astype(np.float)
+            Y_input_DIP[1,:,:,0] =  Y_input.imag.astype(np.float)
             
             Y_output = {}
             for i in out_channel_list:
-                DIP_training_1 = DIP(Y_input, layers, i, SNR, lr)
+                DIP_training_1 = DIP(Y_input_DIP, layers, i, SNR, lr)
                 Y_output['SNR'+str(SNR)+'_k'+str(i)] =\
                     DIP_training_1.training(device)
      
