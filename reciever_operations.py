@@ -146,4 +146,4 @@ class Plotter_and_analyzer:
         plt.draw()
         if not os.path.exists('Results'):
                os.makedirs('Results')
-        plt.savefig('Results\plot.png')
+        plt.savefig('Results/plot.png')
