@@ -35,8 +35,10 @@ class SystemModel:
         """
         self.snr_id = snr_id
     def generate(self):
-        h_matrix_org = self.generateChannel()
-        y_matrix = self.generateTXsignal(h_matrix_org)
+        x_matrix_org = self.generateChannel()
+        y_matrix = self.generateTXsignal(x_matrix_org)
+        x_temp = np.matmul(SystemModel.b_left_matrix, x_matrix_org)
+        h_matrix_org = np.matmul(x_temp, SystemModel.b_nt_matrix)
         return [y_matrix, h_matrix_org]
     
     def generateChannel(self):
@@ -87,6 +89,7 @@ class SystemModel:
         
         F_h =  dft(nT_h)
         F_v =  dft(nT_v)
+        cls.b_nt = np.kron(F_v, F_h)
         return np.kron(F_v, F_h)
     
     @classmethod

@@ -6,6 +6,7 @@ Created on Tue Aug 25 13:41:11 2020
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
 
 from DIP_training import DIP_training as DIP
 
@@ -59,7 +60,8 @@ class ChannelEstimator:
             const_L = self.system_parameters.const_L
             h_LS = np.matmul(y_matrix,
                              np.linalg.pinv(self.system_parameters.t_matrix))
-            h_matrix = dip_processing(h_LS)
+            h_temp = dip_processing(h_LS, [8], 0, layers = 6, lr = 0.01 )
+            h_matrix = h_temp['SNR0_k8']
             return h_matrix
         
         def nmse_calculator(h_est, h_org):
@@ -69,24 +71,35 @@ class ChannelEstimator:
                 return mse*1e7
             return mse/den
         
-        def dip_processing(Y_input, out_channel_list, SNR, layers = 6, lr = 0.01 ):
+        def dip_processing(Y_input, out_channel_list, SNR, layers = 6,
+                           lr = 0.01 ):
             """
             Parameters:
-            Y_input - matrix of size 64 * 64
-            out_channel_list - Hyper parameter that represent list of number of channels for the CNN eg:[8]or[8,16,32]
-            SNR - integer that represents the SNR of th e signal eg: 0 or 5
-            layers - Hyper parameter : Number of hidden layers for the network. Integer should be more than 1
-            lr - Hyper parameter : Learning rate for the optimizing model. Default is 0.01
             
-            DESCRIPTION: This function invokes the functions to perform DIP estimation to denoise the Y_input 
-            for the given SNR by experimenting over the specified set of hyper parameters like layers, out_channel_list
-            and lr
+                Y_input - matrix of size 64 * 64
+                
+                out_channel_list - Hyper parameter that represent list of
+                number of channels for the CNN eg:[8]or[8,16,32]
+                
+                SNR - integer that represents the SNR of the signal eg: 0 or 5
+                
+                layers - Hyper parameter : Number of hidden layers for the
+                network. Integer should be more than 1
+                
+                lr - Hyper parameter : Learning rate for the optimizing model.
+                Default is 0.01
+            
+            DESCRIPTION: This function invokes the functions to perform DIP
+            estimation to denoise the Y_input for the given SNR by
+            experimenting over the specified set of hyper parameters like
+            layers, out_channel_list and lr
 
             Returns:
-            A dictionary Y_output of the form 
-                    Y_output = {'SNR5'_k8' : Y_out, ...}
-            where the key is made up of SNR and each of the number from out_channel_list and the corresponding Y_out 
-            is the denoised signal for the respective SNR and out_channel_opt value
+                A dictionary Y_output of the form
+                    Y_output = {'SNR5_k8' : Y_out, ...}
+                where the key is made up of SNR and each of the number from
+                out_channel_list and the corresponding Y_out is the denoised
+                signal for the respective SNR and out_channel_opt value
         
             """
             GPU = True
@@ -100,16 +113,18 @@ class ChannelEstimator:
            
             # Complex matrix Y_input of size 64*64 split to form
             # 2*64*64*1 real matrix
-            # We are training or fitting 1 sample at a time unlike the DNN training, so the dim = 3 has size 1
+            # We are training or fitting 1 sample at a time unlike the
+            # DNN training, so the dim = 3 has size 1
             
-            Y_input_DIP = np.zeros(2,Y_input.shape[0],Y_input.shape[1],1)
+            Y_input_DIP = np.zeros(2, Y_input.shape[0], Y_input.shape[1], 1)
             Y_input_DIP[0,:,:,:] =  Y_input.real.astype(np.float)
             Y_input_DIP[1,:,:,:] =  Y_input.imag.astype(np.float)
             
             Y_output = {}
             for i in out_channel_list:
-                DIP_training_1 = DIP(Y_input,layers, out_channel_opt= i ,SNR, lr)
-                Y_output['SNR'+str(SNR)+'_k'+str(i)] = DIP_training_1.training(device)
+                DIP_training_1 = DIP(Y_input, layers, i, SNR, lr)
+                Y_output['SNR'+str(SNR)+'_k'+str(i)] =\
+                    DIP_training_1.training(device)
      
             return Y_output
         
