@@ -15,12 +15,14 @@ import torch.nn.functional as F
 
 class DIP_training:
     def __init__(self,Y_input, layers=6, out_channel_opt= 8 ,SNR = 0, lr = 0.01):
+        
         self.layers = layers 
         self.out_channel_opt = out_channel_opt
         self.SNR = SNR 
         self.Y_input = Y_input
         self.lr = lr
-        
+        return 
+    
     def training(self,device):
         
         Y_input = self.Y_input
@@ -62,7 +64,6 @@ class DIP_training:
 
             except RuntimeError as e:
                 if 'CUDA out of memory' in str(e):
-                    print("Heyy you here ")
                     sys.stdout.flush()
                 else:
                     raise e
@@ -70,9 +71,10 @@ class DIP_training:
             loss = mse(val,torch.unsqueeze(inp, 0).float())
 
             ll = loss.item()
+            print("Loss at epoch ,j," is ", ll) 
             loss.backward()
             optimizer.step()
-
+            
         y_output = val
         y_output = y_output.cpu().detach().numpy()
         return y_output
