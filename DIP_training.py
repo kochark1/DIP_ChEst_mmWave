@@ -71,7 +71,7 @@ class DIP_training:
             loss = mse(val,torch.unsqueeze(inp, 0).float())
 
             ll = loss.item()
-            print("Loss at epoch ,j," is ", ll) 
+            print("Loss at epoch" ,j," is ", ll) 
             loss.backward()
             optimizer.step()
             
