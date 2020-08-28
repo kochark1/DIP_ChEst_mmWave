@@ -7,7 +7,8 @@ Created on Tue Aug 25 13:41:11 2020
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-
+import os.path
+import os
 from DIP_training import DIP_training as DIP
 
 class ChannelEstimator:
@@ -143,3 +144,6 @@ class Plotter_and_analyzer:
         snr_dB = Plotter_and_analyzer.system_parameters.snr_dB
         plt.plot(snr_dB, performance_results)
         plt.draw()
+        if not os.path.exists('Results'):
+               os.makedirs('Results')
+        plt.savefig('Results\plot.png')
