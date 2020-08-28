@@ -72,7 +72,7 @@ class ChannelEstimator:
                 return mse*1e7
             return mse/den
         
-        def dip_processing(Y_input, out_channel_list, SNR, layers = 6,
+        def dip_processing(Y_input, out_channel_list = [8], SNR = 0, layers = 6,
                            lr = 0.01 ):
             """
             Parameters:
