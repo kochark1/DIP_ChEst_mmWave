@@ -1,4 +1,8 @@
+"""
 
+@author: Pavithra Vijayakrishnan
+
+"""
 
 import torch
 import torch.nn as nn
@@ -28,7 +32,7 @@ class deep_channel_estimator(nn.Module):
             intermediate_layer.append(nn.ReflectionPad2d(padd))
             intermediate_layer.append(nn.Conv2d(out_channel,in_channel, kernel_size=ksize, stride=1,bias = bs_state))
             self.model = nn.Sequential(*intermediate_layer)
-            print(self.model)
+            
             return
 
 
