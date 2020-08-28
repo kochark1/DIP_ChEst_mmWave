@@ -7,27 +7,7 @@ Created on Tue Aug 25 13:41:11 2020
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-# ToDo Pavithra task 5: Following are the list of imports for DIP. Try to
-# cleanup and reduce unnecesary imports if possible. or move these into
-# DIP_training file if possible.
-
 from DIP_training import DIP_training as DIP
-import time
-from numpy import linalg as LA
-import scipy.io
-import copy
-from pylab import *
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
-import os.path
-import os
-import math
-import matplotlib.pyplot as plt
-from sklearn.metrics import mean_squared_error
-from datetime import datetime
 
 class ChannelEstimator:
     """
@@ -81,35 +61,35 @@ class ChannelEstimator:
                              np.linalg.pinv(self.system_parameters.t_matrix))
             h_matrix = dip_processing(h_LS)
             return h_matrix
+        
         def nmse_calculator(h_est, h_org):
             mse = np.mean((abs(h_est - h_org))**2)
             den = np.mean((abs(h_org))**2)
             if den <= (1e-7):
                 return mse*1e7
             return mse/den
+        
         def dip_processing(Y_input):
-            # ToDo Pavithra task 4: maintain this method by yourself.
-            # Remove any unnecesary lines. If possible, improve redability
             GPU = True
             if GPU == True and torch.cuda.ids_available():
                 device = torch.device('cuda:0')
-                print(device,"   device is")
-                #print("this is it ",torch.cuda.get_device_name(device_id))
                 torch.backends.cudnn.enabled = True
                 torch.backends.cudnn.benchmark = True
             else:
                 device = torch.device('cpu')
+           
+            # Complex matrix Y_input of size 64*64 split to form
+            # 2*64*64*1 real matrix
             
-            user_samples = 10
-            
-            # ToDo Pavithra task 1: here, convert the input 64 by 64
-            # complex matrix to 2,64,64 real
-            Y_input  = np.random.rand(2,64,64,user_samples)
+            Y_input_DIP = np.zeros(2,Y_input.shape[0],Y_input.shape[1],1)
+            Y_input_DIP[0,:,:,:] =  Y_input.real.astype(np.float)
+            Y_input_DIP[1,:,:,:] =  Y_input.imag.astype(np.float)
+           
             
             # ToDo Pavithra task 2: clean up inside two files as much as
             # possible
             DIP_training_1 = DIP(Y_input)
-            DIP_training_1.training(device)
+            Y_output = DIP_training_1.training(device)
             # ToDo Pavithra task 3: read Y_output from DIP_training_1 rather
             # than saving into a file
             return Y_output
