@@ -51,6 +51,8 @@ class DIP_training:
         optimizer = optim.Adam(dce.parameters(), lr=self.lr)
         mse = torch.nn.MSELoss()
         inp = Y_input[0,:,:,:]
+        inp_torch = torch.from_numpy(inp)
+        inp = inp_torch.to(device)
         inputCPU = Z1[0,:,:,:].float()
         inputGPU = inputCPU.to(device)
         avg_Denoised = []
@@ -71,7 +73,7 @@ class DIP_training:
             loss = mse(val,torch.unsqueeze(inp, 0).float())
 
             ll = loss.item()
-            print("Loss at epoch" ,j," is ", ll) 
+            #print("Loss at epoch" ,j," is ", ll) 
             loss.backward()
             optimizer.step()
             
