@@ -36,6 +36,7 @@ class Reciever:
                 if Simulation_parameters.threadingEnabled:
                     t = threading.Thread(target=self.snr_branch_estimator,
                                          args=[filePath, sample_id, snr_id])
+                    t.daemon = True
                     t.start()
                     threads = threads + [t,]
                 else:
@@ -50,6 +51,7 @@ class Reciever:
                 for thread in threads:
                     performance_results[snr_id] = thread.join()
                     snr_id += 1
+            print(f"Sample {sample_id} done!{performance_results.T}")
             avg_nmse += ((1/self.number_of_samples)*performance_results)
         plotter_and_analyzer.nmse_plotter(avg_nmse)
             

@@ -57,11 +57,9 @@ class ChannelEstimator:
 
         """
         def channel_estimation(self, y_matrix):
-            nT = self.system_parameters.nT
-            nR = self.system_parameters.nR
-            const_L = self.system_parameters.const_L
             h_LS = np.matmul(y_matrix,
                              np.linalg.pinv(self.system_parameters.t_matrix))
+            # h_matrix = h_LS
             h_temp = dip_processing(h_LS, [8], 0, layers = 6, lr = 0.01 )
             h_matrix = h_temp['SNR0_k8']
             return h_matrix
@@ -125,8 +123,9 @@ class ChannelEstimator:
             Y_output = {}
             for i in out_channel_list:
                 DIP_training_1 = DIP(Y_input_DIP, layers, i, SNR, lr)
-                Y_output['SNR'+str(SNR)+'_k'+str(i)] =\
-                    DIP_training_1.training(device)
+                Y_temp = DIP_training_1.training(device)
+                Y_output['SNR'+str(SNR)+'_k'+str(i)] = Y_temp[0,0,:,:] +\
+                    1j* Y_temp[0,1,:,:]
      
             return Y_output
         
@@ -143,8 +142,9 @@ class Plotter_and_analyzer:
     
     def nmse_plotter(self, performance_results):
         snr_dB = Plotter_and_analyzer.system_parameters.snr_dB
-        plt.plot(snr_dB, performance_results)
+        plt.plot(snr_dB, 10*np.log10(performance_results))
         plt.draw()
         if not os.path.exists('Results'):
                os.makedirs('Results')
         plt.savefig('Results/plot.png')
+        np.save('Results/nmse_vals.npy', performance_results)

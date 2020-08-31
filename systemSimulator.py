@@ -38,7 +38,7 @@ class SystemModel:
         x_matrix_org = self.generateChannel()
         y_matrix = self.generateTXsignal(x_matrix_org)
         x_temp = np.matmul(SystemModel.b_left_matrix, x_matrix_org)
-        h_matrix_org = np.matmul(x_temp, SystemModel.b_nt_matrix)
+        h_matrix_org = np.matmul(x_temp, SystemModel.b_nt_matrix.conj().T)
         return [y_matrix, h_matrix_org]
     
     def generateChannel(self):
@@ -78,8 +78,8 @@ class SystemModel:
         nR_h = cls.system_parameters.nR_h
         nR_v = cls.system_parameters.nR_v
         
-        F_h =  dft(nR_h)
-        F_v =  dft(nR_v)
+        F_h =  dft(nR_h)/np.sqrt(nR_h)
+        F_v =  dft(nR_v)/np.sqrt(nR_v)
         cls.b_left_matrix = np.kron(F_v, F_h)
         
     @classmethod
@@ -87,8 +87,8 @@ class SystemModel:
         nT_h = cls.system_parameters.nT_h
         nT_v = cls.system_parameters.nT_v
         
-        F_h =  dft(nT_h)
-        F_v =  dft(nT_v)
+        F_h =  dft(nT_h)/np.sqrt(nT_h)
+        F_v =  dft(nT_v)/np.sqrt(nT_v)
         cls.b_nt_matrix = np.kron(F_v, F_h)
         return np.kron(F_v, F_h)
     
@@ -100,7 +100,8 @@ class SystemModel:
         first_row_zeroshift = np.zeros((nP,))
         first_row_zeroshift[0] = 1.0
         b_matrix = 1j*np.zeros((nT *cls.system_parameters.const_L, nP))
-        bt_matrix = np.matmul(b_nt_matrix, cls.system_parameters.t_matrix)
+        bt_matrix = np.matmul(b_nt_matrix.conj().T,
+                              cls.system_parameters.t_matrix)
         for l in range(cls.system_parameters.const_L):
             first_row_shifted = np.roll(first_row_zeroshift, l)
             j_l_matrix = circulant(first_row_shifted)

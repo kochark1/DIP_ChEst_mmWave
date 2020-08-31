@@ -1,7 +1,9 @@
 # ignore all .txt files
 *.txt
 *.npy
+*.png
 
 # ignore the following folders and theircontent
 dataSet/
+Results/
 __pycache__/
