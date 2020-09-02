@@ -21,7 +21,8 @@ class ChannelEstimator:
         Datapath (equalization, demodulation and decoding)
     
     """
-    def __init__(self, system_parameters_passed, channel_parameters_passed):
+    def __init__(self, system_parameters_passed, channel_parameters_passed,
+                 snr_id):
         """
         
 
@@ -41,8 +42,9 @@ class ChannelEstimator:
         """
         self.system_parameters = system_parameters_passed
         self.channel_parameters = channel_parameters_passed
+        self.snr_id = snr_id
     
-    def estimate(self, y_matrix, h_matrix_org, snr_id):
+    def estimate(self, y_matrix, h_matrix_org):
         """
         
 
@@ -57,22 +59,25 @@ class ChannelEstimator:
 
         """
         def channel_estimation(self, y_matrix):
+            snr_dB = self.system_parameters.snr_dB[self.snr_id]
+            snr_lin = 10**(snr_dB/10)
             h_LS = np.matmul(y_matrix,
                              np.linalg.pinv(self.system_parameters.t_matrix))
-            # h_matrix = h_LS
+            h_LS = np.sqrt((snr_lin+1)/snr_lin)*h_LS
+            h_matrix = h_LS
             h_temp = dip_processing(h_LS, [8], 0, layers = 6, lr = 0.01 )
             h_matrix = h_temp['SNR0_k8']
             return h_matrix
         
         def nmse_calculator(h_est, h_org):
-            mse = np.mean((abs(h_est - h_org))**2)
-            den = np.mean((abs(h_org))**2)
+            mse = np.linalg.norm((h_est - h_org), 'fro')
+            den = np.linalg.norm(h_org, 'fro')
             if den <= (1e-7):
                 return mse*1e7
             return mse/den
         
-        def dip_processing(Y_input, out_channel_list = [8], SNR = 0, layers = 6,
-                           lr = 0.01 ):
+        def dip_processing(Y_input, out_channel_list = [8], SNR = 0,
+                           layers = 6, lr = 0.01 ):
             """
             Parameters:
             

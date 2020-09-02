@@ -59,6 +59,7 @@ class System_parameters:
         if System_parameters.pilot_structure == 'Random':
             cls.t_matrix = np.random.randn(nT,nP) +\
                 np.random.randn(nT,nP) * 1j
+            cls.t_matrix = np.sqrt(1/(2*nP))*cls.t_matrix
         else:
             print(f"""System parameter setting error: pilot structure cannot
                   be {System_parameters.pilot_structure}""")

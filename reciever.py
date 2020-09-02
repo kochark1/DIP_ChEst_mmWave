@@ -67,5 +67,5 @@ class Reciever:
         # can develop more classes in reciever_operations and use based on
         # requirement
         channelEstimator = ChannelEstimator(System_parameters,
-                                            Channel_parameters)
-        return channelEstimator.estimate(y_matrix, h_matrix_org, snr_id)
+                                            Channel_parameters, snr_id)
+        return channelEstimator.estimate(y_matrix, h_matrix_org)

@@ -36,6 +36,7 @@ class SystemModel:
         self.snr_id = snr_id
     def generate(self):
         x_matrix_org = self.generateChannel()
+        x_matrix_org /= 16.5
         y_matrix = self.generateTXsignal(x_matrix_org)
         x_temp = np.matmul(SystemModel.b_left_matrix, x_matrix_org)
         h_matrix_org = np.matmul(x_temp, SystemModel.b_nt_matrix.conj().T)
@@ -46,9 +47,9 @@ class SystemModel:
         nR = self.system_parameters.nR
         x_matrix = 1j*(np.zeros((nR, nT *self.system_parameters.const_L)))
         for l in range(self.system_parameters.const_L):
-            temp = random(nR, nT, density=0.05).A +\
-                1j * random(nR, nT, density=0.05).A
-            x_matrix[:, (l*nT):((l+1)*nT)] = temp
+            real_mat = random(nR, nT, density=0.05).A
+            imag_mat = (real_mat>1e-2)*np.random.randn(nR,nT)
+            x_matrix[:, (l*nT):((l+1)*nT)] = real_mat + 1j * imag_mat
         return x_matrix
     def generateTXsignal(self, h_matrix):
         nT = self.system_parameters.nT
@@ -62,7 +63,8 @@ class SystemModel:
                              b_right_matrix)
         noise_matrix = (1/np.sqrt(2))*np.random.randn(nT, nP) +\
             1j * (1/np.sqrt(2))*np.random.randn(nT, nP)
-        y_matrix = z_matrix + (1/snr_lin)*noise_matrix
+        y_matrix = np.sqrt(snr_lin/(snr_lin+1))*z_matrix +\
+            np.sqrt(1/(snr_lin+1))*noise_matrix
         y_matrix = np.sign(y_matrix.real) + 1j * np.sign(y_matrix.imag)
         return y_matrix
     
