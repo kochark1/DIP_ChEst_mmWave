@@ -23,6 +23,8 @@ class Reciever:
         for sample_id in range(self.number_of_samples):
             tt = 0
             while not Simulation_parameters.completionFlag[sample_id]:
+                if Simulation_parameters.dataGenDisabled:
+                    break
                 time.sleep(0.5)
                 tt += 1
             

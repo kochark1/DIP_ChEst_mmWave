@@ -80,7 +80,7 @@ for sample_id in range(number_of_samples):
 # Handling the case of missing t.start()
 if dataGenEnabled and (threadingDisabled or waitedTooLong):
         Reciever(results_folder_path, number_of_samples)
-else:
+elif dataGenDisabled and threadingEnabled:
     # Wait till the reciever thread is done for accurate total time.
     t.join()
 

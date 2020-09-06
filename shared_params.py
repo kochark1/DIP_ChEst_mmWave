@@ -36,7 +36,8 @@ class Simulation_parameters:
         if os.path.exists(cls.results_folder):
             print("\n'dataSet' folder was not deleted")
             sys.exit()
-        os.mkdir(cls.results_folder)
+        if not Simulation_parameters.dataGenDisabled:
+            os.mkdir(cls.results_folder)
 
 class System_parameters:
     nT_h = 8 # number of horixontal antennas at the Tx
