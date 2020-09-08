@@ -125,12 +125,27 @@ class ChannelEstimator:
             Y_input_DIP[0,:,:,0] =  Y_input.real.astype(np.float)
             Y_input_DIP[1,:,:,0] =  Y_input.imag.astype(np.float)
             
+            mn_real = np.mean(Y_input_DIP[0,:,:,0])
+            mn_imag = np.mean(Y_input_DIP[1,:,:,0])
+            mn = mn_real + 1j*mn_imag
+            
+            Y_input_DIP[0,:,:,0] -= mn_real
+            Y_input_DIP[1,:,:,0] -= mn_imag
+            norm_factor = 2*np.amax(abs(Y_input_DIP))
+            Y_input_DIP /= norm_factor
+            Y_input_DIP += 0.5
+            
             Y_output = {}
             for i in out_channel_list:
                 DIP_training_1 = DIP(Y_input_DIP, layers, i, SNR, lr)
                 Y_temp = DIP_training_1.training(device)
                 Y_output['SNR'+str(SNR)+'_k'+str(i)] = Y_temp[0,0,:,:] +\
                     1j* Y_temp[0,1,:,:]
+                
+                
+                Y_output['SNR'+str(SNR)+'_k'+str(i)] -= 0.5*(1+1j)
+                Y_output['SNR'+str(SNR)+'_k'+str(i)] *= norm_factor
+                Y_output['SNR'+str(SNR)+'_k'+str(i)] += mn
      
             return Y_output
         

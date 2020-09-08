@@ -72,7 +72,8 @@ class System_parameters:
                 snr_folder = f'snr{snr}'
             else:
                 snr_folder = f'snr_minus{-snr}'
-            os.mkdir(snr_folder)
+            if not Simulation_parameters.dataGenDisabled:
+                os.mkdir(snr_folder)
             cls.snr_folder_list.append(snr_folder)
         os.chdir(Simulation_parameters.root_path)
 
