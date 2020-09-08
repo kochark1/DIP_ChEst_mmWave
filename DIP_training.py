@@ -10,50 +10,56 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-
+import sys
 
 
 class DIP_training:
-    def __init__(self,Y_input, layers=6, out_channel_opt= 8 ,SNR = 0, lr = 0.01):
+    layers = 6
+    out_channel_opt = 2
+    lr = 0.01
+    # epoch_dict = {'M2_8':2000,'M2_16':1300,'M2_32':900,'M2_64':250}
+    max_epoch = 500
+    
+    def __init__(self, Y_input):
         
-        self.layers = layers 
-        self.out_channel_opt = out_channel_opt
-        self.SNR = SNR 
         self.Y_input = Y_input
-        self.lr = lr
+        GPU = True
+        if GPU == True and torch.cuda.is_available():
+            self.device = torch.device('cuda:0')
+            torch.backends.cudnn.enabled = True
+            torch.backends.cudnn.benchmark = True
+        else:
+            self.device = torch.device('cpu')
+        
         return 
     
-    def training(self,device):
-        
+    def training(self):
         Y_input = self.Y_input
-        Y_input = np.transpose(Y_input , (3,0,1,2))
-        snr_val = self.SNR
-        snr_lin_val = pow(10,(snr_val/10))
-        user_samples = Y_input.shape[0] 
-        epoch_dict = {'M2_8':2000,'M2_16':1300,'M2_32':900,'M2_64':250}
-        M =  Y_input.shape[1]
+        device = self.device
+        M =  Y_input.shape[0]
         layers = self.layers #Can configure this in the new systems file if needed
         out_channel = self.out_channel_opt
-        MM = Y_input.shape[2] # No of receiver antennas in mmWave
-        NN = Y_input.shape[3] # No of Transmitter antennas in mmWave
+        MM = Y_input.shape[1] # No of receiver antennas in mmWave
+        NN = Y_input.shape[2] # No of Transmitter antennas in mmWave
         MM_den = pow(2,layers-1)
         NN_den = pow(2,layers-1)
-        Z0 = np.random.rand(user_samples,out_channel,int(MM/MM_den),int(NN/NN_den))
+        Z0 = np.random.rand(out_channel,int(MM/MM_den),int(NN/NN_den))
         Z1 = torch.from_numpy(Z0)
         Z1.type(torch.DoubleTensor)
-        in_channel = Y_input.shape[1]
+        in_channel = Y_input.shape[0]
         results = []
         result_orig = []
-        max_epoch = epoch_dict['M'+str(M)+'_'+str(out_channel)]
+        max_epoch = self.max_epoch
         Final_vals = []
         dce = DCE(in_channel,out_channel,layers)
         dce.to(device)
         optimizer = optim.Adam(dce.parameters(), lr=self.lr)
         mse = torch.nn.MSELoss()
-        inp = Y_input[0,:,:,:]
+        inp = np.zeros((1,) + Y_input.shape)
+        inp[0,:,:,:] = Y_input
         inp_torch = torch.from_numpy(inp)
         inp = inp_torch.to(device)
-        inputCPU = Z1[0,:,:,:].float()
+        inputCPU = Z1.float()
         inputGPU = inputCPU.to(device)
         avg_Denoised = []
         ll_check = []
@@ -70,14 +76,14 @@ class DIP_training:
                 else:
                     raise e
                 
-            loss = mse(val,torch.unsqueeze(inp, 0).float())
+            loss = mse(val, inp.float())
 
             ll = loss.item()
             #print("Loss at epoch" ,j," is ", ll) 
             loss.backward()
             optimizer.step()
             
-        y_output = val
+        y_output = val[0,:,:,:]
         y_output = y_output.cpu().detach().numpy()
         return y_output
 
